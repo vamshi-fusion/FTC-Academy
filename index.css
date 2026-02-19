@@ -1,0 +1,150 @@
+:root {
+  --app-bg: 245 242 234;
+  --app-panel: 236 231 220;
+  --app-line: 184 175 158;
+  --app-ink: 31 36 48;
+  --app-muted: 110 116 111;
+  --app-accent: 31 138 112;
+  --app-accent-2: 217 119 69;
+}
+
+.theme-dark {
+  --app-bg: 16 18 24;
+  --app-panel: 28 32 41;
+  --app-line: 54 61 76;
+  --app-ink: 234 237 242;
+  --app-muted: 156 164 179;
+  --app-accent: 71 196 169;
+  --app-accent-2: 255 150 96;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-variation-settings: 'wght' 700;
+  color: rgb(var(--app-ink));
+  background-color: rgb(var(--app-bg));
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(31, 138, 112, 0.09), transparent 32%),
+    radial-gradient(circle at 88% 84%, rgba(217, 119, 69, 0.08), transparent 36%);
+}
+
+button,
+input,
+textarea,
+select {
+  font-weight: 700;
+  font-variation-settings: 'wght' 700;
+}
+
+.theme-dark body {
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(71, 196, 169, 0.1), transparent 32%),
+    radial-gradient(circle at 88% 84%, rgba(255, 150, 96, 0.09), transparent 36%);
+}
+
+.theme-dark .bg-white {
+  background-color: rgb(23 27 36) !important;
+}
+
+.border {
+  border-width: 2px !important;
+}
+
+.border-t,
+.border-b,
+.border-l,
+.border-r {
+  border-width: 2px !important;
+}
+
+.border-x {
+  border-left-width: 2px !important;
+  border-right-width: 2px !important;
+}
+
+.border-y {
+  border-top-width: 2px !important;
+  border-bottom-width: 2px !important;
+}
+
+.font-semibold,
+.font-bold,
+.font-black {
+  font-weight: 700 !important;
+  font-variation-settings: 'wght' 700 !important;
+}
+
+.ui-primary {
+  background-color: #47c4a9;
+  color: #0f141b;
+}
+
+.ui-primary:hover {
+  background-color: #5ad6bb;
+}
+
+.theme-dark .ui-primary {
+  background-color: #47c4a9;
+  color: #0f141b;
+}
+
+.theme-dark .ui-primary:hover {
+  background-color: #5ad6bb;
+}
+
+.ui-spotlight {
+  background-color: #47c4a9;
+  color: #0f141b;
+}
+
+.theme-dark .ui-spotlight {
+  background-color: #253043;
+  color: #edf2f7;
+}
+
+.ui-spotlight p {
+  color: #1f2430;
+}
+
+.theme-dark .ui-spotlight p {
+  color: #c6d0dd;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(71, 196, 169, 0.25);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--app-panel));
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--app-line));
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--app-muted));
+}

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:checks": "node server/checks-server.mjs",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit"

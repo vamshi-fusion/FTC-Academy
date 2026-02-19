@@ -29,7 +29,7 @@ export interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: string; // Emoji or Lucide name
+  icon: string; // Icon key name
   requirement: (progress: UserProgressStore) => boolean;
 }
 

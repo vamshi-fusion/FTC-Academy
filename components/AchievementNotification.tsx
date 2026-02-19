@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, X } from 'lucide-react';
 import { Achievement } from '../types';
+import AchievementIcon from './AchievementIcon';
 
 interface AchievementToastProps {
   achievement: Achievement;
@@ -35,7 +36,7 @@ const AchievementToast: React.FC<AchievementToastProps> = ({ achievement, onClos
     >
       <div className="p-4 flex items-center space-x-4">
         <div className="w-12 h-12 bg-ftc-orange/10 rounded-xl flex items-center justify-center text-3xl shadow-inner">
-          {achievement.icon}
+          <AchievementIcon name={achievement.icon} size={20} className="text-ftc-orange" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-[10px] font-black text-ftc-orange uppercase tracking-[0.2em] mb-0.5">Unlocked!</div>

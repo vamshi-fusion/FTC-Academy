@@ -28,7 +28,7 @@ const AITutor: React.FC<AITutorProps> = ({ code, context, isOpen, onClose }) => 
         \`\`\`
         
         Please analyze their code. If there are errors, explain them simply. If the code is good, suggest one way to make it even better or explain a robotics concept related to it (like power curves or timing).
-        Keep your response encouraging, concise (max 150 words), and use emojis to be friendly!
+        Keep your response encouraging, concise (max 150 words), and do not use emojis.
         Format your response in Markdown.
       `;
 
@@ -41,7 +41,7 @@ const AITutor: React.FC<AITutorProps> = ({ code, context, isOpen, onClose }) => 
       // Extract text output directly from the .text property
       setResponse(result.text || "I'm sorry, I couldn't process that. Try again!");
     } catch (error) {
-      setResponse("Oops! I'm having trouble connecting to my robotic brain right now. 🤖");
+      setResponse("Oops! I'm having trouble connecting to my robotic brain right now.");
     } finally {
       setLoading(false);
     }

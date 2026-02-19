@@ -1,15 +1,18 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Trophy, BookMarked, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookMarked, BookOpen, ChevronLeft, ChevronRight, LayoutDashboard, LogOut, Trophy, X } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface SidebarProps {
-  isOpen: boolean; // Mobile open/close
-  toggle: () => void; // Mobile toggle
-  isCollapsed: boolean; // Desktop collapse/expand
-  setCollapsed: (val: boolean) => void; // Desktop toggle
+  isOpen: boolean;
+  toggle: () => void;
+  isCollapsed: boolean;
+  setCollapsed: (val: boolean) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isCollapsed, setCollapsed }) => {
+  const { user, logout } = useAuth();
+
   const links = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/lessons', icon: BookOpen, label: 'Lessons' },
@@ -19,34 +22,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isCollapsed, setColla
 
   return (
     <>
-      {/* Mobile Overlay */}
-      <div 
-        className={`fixed inset-0 z-20 bg-black/50 transition-opacity lg:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      <div
+        className={`fixed inset-0 z-30 bg-black/30 backdrop-blur-sm transition-opacity lg:hidden ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         onClick={toggle}
       />
 
-      {/* Sidebar Content */}
-      <aside 
-        className={`fixed top-0 left-0 z-30 h-full bg-slate-900 border-r border-slate-800 transform transition-all duration-300 ease-in-out lg:translate-x-0 ${
+      <aside
+        className={`fixed left-0 top-0 z-40 h-full border-r border-app-line bg-white transition-all duration-300 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } ${isCollapsed ? 'w-20' : 'w-64'}`}
+        } lg:translate-x-0 ${isCollapsed ? 'w-24' : 'w-72'}`}
       >
-        <div className="flex flex-col h-full overflow-hidden">
-          {/* Header */}
-          <div className={`h-16 flex items-center px-4 border-b border-slate-800 shrink-0 ${isCollapsed ? 'justify-center' : 'px-6'}`}>
-            <div className="w-8 h-8 bg-gradient-to-br from-ftc-orange to-ftc-blue rounded-md shrink-0 shadow-lg shadow-ftc-orange/20"></div>
-            {!isCollapsed && (
-              <span className="ml-3 font-bold text-xl tracking-tight text-white whitespace-nowrap overflow-hidden animate-in fade-in duration-500">
-                FTC Academy
-              </span>
-            )}
-            <button className="ml-auto lg:hidden text-slate-400" onClick={toggle}>
-                <X size={24} />
+        <div className="flex h-full flex-col overflow-hidden">
+          <div className={`flex h-16 items-center border-b border-app-line ${isCollapsed ? 'justify-center px-2' : 'px-5'}`}>
+            <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-app-accent text-sm font-bold text-white">FT</div>
+            {!isCollapsed && <span className="ml-3 text-base font-semibold tracking-tight">FTC Academy</span>}
+            <button className="ml-auto text-app-muted lg:hidden" onClick={toggle}>
+              <X size={20} />
             </button>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto overflow-x-hidden">
+          <nav className="flex-1 space-y-1 px-3 py-6">
             {links.map((link) => (
               <NavLink
                 key={link.to}
@@ -54,41 +49,47 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle, isCollapsed, setColla
                 onClick={() => window.innerWidth < 1024 && toggle()}
                 title={isCollapsed ? link.label : ''}
                 className={({ isActive }) =>
-                  `flex items-center rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isCollapsed ? 'justify-center p-3' : 'px-3 py-3'
+                  `flex items-center rounded-xl border px-3 py-2.5 text-sm font-medium transition-all ${
+                    isCollapsed ? 'justify-center' : ''
                   } ${
                     isActive
-                      ? 'bg-ftc-blue/10 text-ftc-blue shadow-[inset_0_0_0_1px_rgba(0,102,179,0.2)]'
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                      ? 'border-app-accent/40 bg-app-accent/10 text-app-accent'
+                      : 'border-transparent text-app-muted hover:border-app-line hover:bg-app-panel hover:text-app-ink'
                   }`
                 }
               >
-                <link.icon className={`shrink-0 ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5 mr-3'}`} />
-                {!isCollapsed && <span className="whitespace-nowrap overflow-hidden animate-in fade-in slide-in-from-left-2">{link.label}</span>}
+                <link.icon size={18} className={`${isCollapsed ? '' : 'mr-3'}`} />
+                {!isCollapsed && <span>{link.label}</span>}
               </NavLink>
             ))}
           </nav>
 
-          {/* Footer & Collapse Toggle */}
-          <div className="mt-auto border-t border-slate-800">
-            {!isCollapsed && (
-              <div className="p-4 text-xs text-slate-500 text-center animate-in fade-in duration-300">
-                <p>Powered by Team Fusion</p>
-                <a href="https://theteamfusion.com" target="_blank" rel="noreferrer" className="hover:text-ftc-orange transition-colors">theteamfusion.com</a>
+          <div className="mt-auto border-t border-app-line p-3">
+            {!isCollapsed && user && (
+              <div className="mb-3 rounded-xl border border-app-line bg-app-panel p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-app-muted">Signed in</p>
+                <p className="mt-1 truncate text-sm font-semibold text-app-ink">{user.name}</p>
+                <p className="truncate text-xs text-app-muted">{user.isGuest ? 'Guest session' : user.email}</p>
               </div>
             )}
-            
-            <button 
-              onClick={() => setCollapsed(!isCollapsed)}
-              className="w-full flex items-center justify-center p-4 text-slate-500 hover:text-white hover:bg-slate-800 transition-colors border-t border-slate-800/50"
-              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+
+            <button
+              onClick={logout}
+              className={`mb-2 inline-flex w-full items-center justify-center rounded-xl border border-app-line px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-app-muted transition-colors hover:border-app-accent hover:text-app-accent ${
+                isCollapsed ? 'h-11' : ''
+              }`}
+              title="Log Out"
             >
-              {isCollapsed ? <ChevronRight size={20} /> : (
-                <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-widest">
-                  <ChevronLeft size={18} />
-                  <span>Collapse</span>
-                </div>
-              )}
+              <LogOut size={16} className={`${isCollapsed ? '' : 'mr-2'}`} />
+              {!isCollapsed && 'Log out'}
+            </button>
+
+            <button
+              onClick={() => setCollapsed(!isCollapsed)}
+              className="inline-flex w-full items-center justify-center rounded-xl border border-app-line px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-app-muted transition-colors hover:border-app-accent hover:text-app-accent"
+              title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            >
+              {isCollapsed ? <ChevronRight size={16} /> : <><ChevronLeft size={16} className="mr-2" /> Collapse</>}
             </button>
           </div>
         </div>

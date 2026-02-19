@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { Menu, ExternalLink, Book, Users, Cpu, PenTool, Layout, Globe, Youtube, Settings, Library, Target } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { HashRouter, Link, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import { ArrowUpRight, Book, Compass, Cpu, Globe, Menu, Moon, Sparkles, Sun } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import LessonDetail from './pages/LessonDetail';
 import ChallengeDetail from './pages/ChallengeDetail';
+import AuthPage from './pages/Auth';
 import { AchievementManager } from './components/AchievementNotification';
 import { LESSONS, CHALLENGES } from './services/data';
-import { Link } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 const ScrollToTop = ({ scrollContainerRef }: { scrollContainerRef: React.RefObject<HTMLElement | null> }) => {
   const { pathname } = useLocation();
@@ -21,169 +22,215 @@ const ScrollToTop = ({ scrollContainerRef }: { scrollContainerRef: React.RefObje
   return null;
 };
 
-const LayoutWrapper: React.FC = () => {
+type Theme = 'light' | 'dark';
+const THEME_KEY = 'ftc_theme_v1';
+
+const getInitialTheme = (): Theme => {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === 'light' || saved === 'dark') return saved;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+const RequireAuth: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace state={{ from: location.pathname }} />;
+  }
+
+  return children;
+};
+
+const PublicOnly: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Navigate to="/" replace /> : children;
+};
+
+const LayoutWrapper: React.FC<{ theme: Theme; toggleTheme: () => void }> = ({ theme, toggleTheme }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setCollapsed] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
   return (
-    <div className="min-h-screen flex bg-[#0f172a]">
+    <div className="min-h-screen bg-app-bg text-app-ink">
       <ScrollToTop scrollContainerRef={mainRef} />
-      <Sidebar 
-        isOpen={isSidebarOpen} 
-        toggle={() => setSidebarOpen(false)} 
+      <Sidebar
+        isOpen={isSidebarOpen}
+        toggle={() => setSidebarOpen(false)}
         isCollapsed={isCollapsed}
         setCollapsed={setCollapsed}
       />
-      
-      <div 
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
-          isCollapsed ? 'lg:pl-20' : 'lg:pl-64'
-        }`}
-      >
-        <div className="lg:hidden h-16 bg-slate-900 border-b border-slate-800 flex items-center px-4 sticky top-0 z-10">
-          <button onClick={() => setSidebarOpen(true)} className="text-white p-2 -ml-2">
-            <Menu size={24} />
-          </button>
-          <span className="ml-2 font-black text-white tracking-tight uppercase text-xs">FTC Academy</span>
+
+      <div className={`min-h-screen transition-all duration-300 ${isCollapsed ? 'lg:pl-24' : 'lg:pl-72'}`}>
+        <div className="sticky top-0 z-20 border-b border-app-line bg-app-bg/85 backdrop-blur-xl">
+          <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 sm:px-6 lg:px-8">
+            <button onClick={() => setSidebarOpen(true)} className="lg:hidden rounded-xl border border-app-line p-2 text-app-ink">
+              <Menu size={20} />
+            </button>
+            <div className="hidden lg:flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-app-muted">
+              <Sparkles size={14} className="text-app-accent" />
+              Training Interface
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleTheme}
+                className="inline-flex items-center gap-2 rounded-full border border-app-line px-3 py-1.5 text-xs font-semibold text-app-ink transition-colors hover:border-app-accent hover:text-app-accent"
+              >
+                {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+                {theme === 'dark' ? 'Light' : 'Dark'}
+              </button>
+              <Link to="/resources" className="inline-flex items-center gap-2 rounded-full border border-app-line px-3 py-1.5 text-xs font-semibold text-app-ink hover:border-app-accent hover:text-app-accent transition-colors">
+                Resource Stack <ArrowUpRight size={14} />
+              </Link>
+            </div>
+          </div>
         </div>
 
-        <main ref={mainRef} className="flex-1 overflow-y-auto">
+        <main ref={mainRef} className="h-[calc(100vh-4rem)] overflow-y-auto">
           <Outlet />
         </main>
       </div>
-      
-      {/* Global Notifications Layer */}
+
       <AchievementManager />
     </div>
   );
 };
 
 const LessonList: React.FC = () => (
-    <div className="p-6 lg:p-10 max-w-5xl mx-auto animate-in fade-in duration-500">
-        <header className="mb-10">
-            <h1 className="text-4xl font-black text-white mb-3 tracking-tight uppercase">Training Path</h1>
-            <p className="text-slate-400">Step-by-step engineering training for modern robotics.</p>
-        </header>
-        <div className="grid gap-4">
-            {LESSONS.map(l => (
-                <Link key={l.id} to={`/lessons/${l.id}`} className="block group">
-                    <div className="bg-[#1e293b] border border-slate-800 p-6 rounded-2xl hover:border-ftc-blue transition-all hover:translate-x-1 flex items-center shadow-xl">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-6 shrink-0 transition-all shadow-inner ${
-                            l.difficulty === 'Beginner' ? 'bg-emerald-500/10 text-emerald-500' : 
-                            l.difficulty === 'Intermediate' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-red-500/10 text-red-500'
-                        }`}>
-                            <span className="font-black text-xl">{l.order}</span>
-                        </div>
-                        <div className="flex-1">
-                             <div className="flex items-center space-x-3 mb-1">
-                                <span className="text-ftc-orange text-[9px] font-black uppercase tracking-[0.2em]">{l.category}</span>
-                                <span className="w-1 h-1 bg-slate-700 rounded-full"></span>
-                                <span className="text-slate-500 text-[10px] font-bold">{l.durationMinutes} MIN</span>
-                             </div>
-                             <h3 className="text-xl font-black text-white group-hover:text-ftc-blue transition-colors tracking-tight">{l.title}</h3>
-                             <p className="text-slate-400 mt-1 text-xs line-clamp-1">{l.description}</p>
-                        </div>
-                        <div className="ml-4 text-slate-700 group-hover:text-ftc-blue transition-colors">
-                            <ExternalLink size={18} />
-                        </div>
-                    </div>
-                </Link>
-            ))}
-        </div>
+  <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+    <header className="mb-8 sm:mb-10">
+      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.25em] text-app-muted">Curriculum</p>
+      <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Build your robotics software foundation</h1>
+    </header>
+
+    <div className="grid gap-4 sm:gap-5">
+      {LESSONS.map((lesson) => (
+        <Link key={lesson.id} to={`/lessons/${lesson.id}`} className="group rounded-2xl border border-app-line bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-app-accent hover:shadow-lg">
+          <div className="flex items-start gap-4 sm:gap-5">
+            <div className="mt-0.5 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-app-panel text-sm font-bold text-app-ink">
+              {lesson.order}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="mb-2 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-app-muted">
+                <span>{lesson.category}</span>
+                <span className="h-1 w-1 rounded-full bg-app-line" />
+                <span>{lesson.durationMinutes} min</span>
+                <span className="h-1 w-1 rounded-full bg-app-line" />
+                <span>{lesson.difficulty}</span>
+              </div>
+              <h3 className="text-lg font-semibold tracking-tight text-app-ink group-hover:text-app-accent sm:text-xl">{lesson.title}</h3>
+              <p className="mt-1 text-sm text-app-muted">{lesson.description}</p>
+            </div>
+            <ArrowUpRight className="shrink-0 text-app-muted transition-colors group-hover:text-app-accent" size={18} />
+          </div>
+        </Link>
+      ))}
     </div>
+  </div>
 );
 
 const ChallengeList: React.FC = () => (
-    <div className="p-6 lg:p-10 max-w-5xl mx-auto animate-in fade-in duration-500">
-        <header className="mb-10">
-            <h1 className="text-4xl font-black text-white mb-3 tracking-tight uppercase">Field Ops</h1>
-            <p className="text-slate-400">Test your logic in a sandbox field simulator.</p>
-        </header>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {CHALLENGES.map(c => (
-                <Link key={c.id} to={`/challenges/${c.id}`} className="block bg-[#1e293b] border border-slate-800 rounded-2xl overflow-hidden hover:border-ftc-orange transition-all hover:-translate-y-1 shadow-2xl">
-                    <div className="p-8">
-                         <div className="flex justify-between items-start mb-6">
-                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
-                                c.difficulty === 'Beginner' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 
-                                c.difficulty === 'Intermediate' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'
-                            }`}>
-                                {c.difficulty}
-                            </span>
-                            <span className="text-[10px] font-black text-slate-500 bg-slate-800 px-2 py-1 rounded uppercase tracking-tighter">{c.points} XP</span>
-                        </div>
-                        <h3 className="text-2xl font-black text-white mb-2 tracking-tight">{c.title}</h3>
-                        <p className="text-slate-400 text-xs leading-relaxed mb-8">{c.description}</p>
-                        <div className="pt-4 border-t border-slate-800 flex items-center text-ftc-orange text-[10px] font-black uppercase tracking-[0.2em]">
-                            <span>Launch Controller</span>
-                            <Cpu size={14} className="ml-2" />
-                        </div>
-                    </div>
-                </Link>
-            ))}
-        </div>
+  <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+    <header className="mb-8 sm:mb-10">
+      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.25em] text-app-muted">Arena</p>
+      <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Put your logic under match pressure</h1>
+    </header>
+
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      {CHALLENGES.map((challenge) => (
+        <Link key={challenge.id} to={`/challenges/${challenge.id}`} className="group rounded-2xl border border-app-line bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-app-accent hover:shadow-xl">
+          <div className="mb-6 flex items-center justify-between">
+            <span className="rounded-full bg-app-panel px-3 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-app-muted">{challenge.difficulty}</span>
+            <span className="rounded-full border border-app-line px-3 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-app-ink">{challenge.points} XP</span>
+          </div>
+          <h3 className="text-2xl font-semibold tracking-tight text-app-ink group-hover:text-app-accent">{challenge.title}</h3>
+          <p className="mt-2 text-sm text-app-muted">{challenge.description}</p>
+          <div className="mt-6 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-app-accent">
+            Launch simulator <Cpu size={14} />
+          </div>
+        </Link>
+      ))}
     </div>
+  </div>
 );
 
-const ResourceCard = ({ title, desc, link, icon: Icon, color }: any) => (
-    <a href={link} target="_blank" rel="noreferrer" className="group block bg-[#1e293b] border border-slate-800 rounded-2xl p-6 transition-all hover:border-slate-600 hover:shadow-2xl hover:bg-slate-800/80">
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110 shadow-inner ${color}`}>
-            <Icon size={24} />
-        </div>
-        <h3 className="text-lg font-black text-white mb-2 group-hover:text-ftc-blue transition-colors flex items-center tracking-tight">
-            {title} <ExternalLink size={14} className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-        </h3>
-        <p className="text-slate-400 text-xs leading-relaxed">{desc}</p>
-    </a>
+const ResourceCard = ({
+  title,
+  desc,
+  link,
+  icon: Icon,
+}: {
+  title: string;
+  desc: string;
+  link: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+}) => (
+  <a href={link} target="_blank" rel="noreferrer" className="group rounded-2xl border border-app-line bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-app-accent hover:shadow-lg">
+    <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-app-panel text-app-accent">
+      <Icon size={22} />
+    </div>
+    <h3 className="text-lg font-semibold tracking-tight text-app-ink group-hover:text-app-accent">{title}</h3>
+    <p className="mt-2 text-sm text-app-muted">{desc}</p>
+  </a>
 );
 
 const Resources: React.FC = () => (
-    <div className="p-6 lg:p-10 max-w-7xl mx-auto pb-24">
-        <header className="mb-12 relative overflow-hidden p-12 bg-gradient-to-br from-[#1e293b] to-slate-950 rounded-3xl border border-slate-800 shadow-2xl">
-            <div className="relative z-10">
-                <h1 className="text-5xl font-black text-white mb-4 tracking-tighter uppercase italic">ENGINEERING <span className="text-ftc-blue">KITS</span></h1>
-                <p className="text-slate-400 max-w-2xl text-lg font-medium leading-relaxed">
-                    A curated collection of industry-standard documentation and community-driven tools.
-                </p>
-            </div>
-            <div className="absolute top-0 right-0 p-10 opacity-10 pointer-events-none">
-                <Settings size={220} className="animate-[spin_12s_linear_infinite]" />
-            </div>
-        </header>
+  <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+    <header className="relative overflow-hidden rounded-3xl border border-app-line bg-white px-6 py-8 shadow-sm sm:px-10 sm:py-12">
+      <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-app-accent/10 blur-3xl" />
+      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.25em] text-app-muted">Resources</p>
+      <h1 className="max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">Professional references for builders, programmers, and drive teams</h1>
+    </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <section className="lg:col-span-3">
-                <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-6 flex items-center">
-                    <span className="w-8 h-[2px] bg-slate-800 mr-4"></span>
-                    <Book size={16} className="mr-3 text-ftc-orange" /> KNOWLEDGE BASE
-                    <span className="flex-1 h-[2px] bg-slate-800 ml-4"></span>
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <ResourceCard title="FTC Docs" desc="Official technical documentation." link="https://ftc-docs.firstinspires.org" icon={Globe} color="bg-blue-500/10 text-blue-500" />
-                    <ResourceCard title="Game Manual 0" desc="Community bible for FTC strategy." link="https://gm0.org" icon={Book} color="bg-orange-500/10 text-orange-500" />
-                    <ResourceCard title="FTC SDK" desc="Official Robot Controller source code." link="https://github.com/FIRST-Tech-Challenge/FtcRobotController" icon={Cpu} color="bg-purple-500/10 text-purple-500" />
-                </div>
-            </section>
-        </div>
-    </div>
+    <section className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+      <ResourceCard title="FTC Docs" desc="Official technical documentation and getting started guides." link="https://ftc-docs.firstinspires.org" icon={Globe} />
+      <ResourceCard title="Game Manual 0" desc="Community-curated explanations of mechanisms, strategy, and controls." link="https://gm0.org" icon={Book} />
+      <ResourceCard title="FTC SDK" desc="Source code and release notes for robot controller development." link="https://github.com/FIRST-Tech-Challenge/FtcRobotController" icon={Compass} />
+    </section>
+  </div>
 );
 
 const App: React.FC = () => {
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('theme-dark', theme === 'dark');
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
+
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/" element={<LayoutWrapper />}>
-          <Route index element={<Dashboard />} />
-          <Route path="lessons" element={<LessonList />} />
-          <Route path="lessons/:id" element={<LessonDetail />} />
-          <Route path="challenges" element={<ChallengeList />} />
-          <Route path="challenges/:id" element={<ChallengeDetail />} />
-          <Route path="resources" element={<Resources />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </HashRouter>
+    <AuthProvider>
+      <HashRouter>
+        <Routes>
+          <Route
+            path="/auth"
+            element={
+              <PublicOnly>
+                <AuthPage />
+              </PublicOnly>
+            }
+          />
+
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <LayoutWrapper theme={theme} toggleTheme={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))} />
+              </RequireAuth>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="lessons" element={<LessonList />} />
+            <Route path="lessons/:id" element={<LessonDetail />} />
+            <Route path="challenges" element={<ChallengeList />} />
+            <Route path="challenges/:id" element={<ChallengeDetail />} />
+            <Route path="resources" element={<Resources />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </HashRouter>
+    </AuthProvider>
   );
 };
 

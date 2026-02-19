@@ -5,16 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FTC Academy - Learn Robot Programming</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              mono: ['JetBrains Mono', 'monospace'],
+              sans: ['Space Grotesk', 'sans-serif'],
+              mono: ['IBM Plex Mono', 'monospace'],
             },
             colors: {
+              app: {
+                bg: 'rgb(var(--app-bg) / <alpha-value>)',
+                panel: 'rgb(var(--app-panel) / <alpha-value>)',
+                line: 'rgb(var(--app-line) / <alpha-value>)',
+                ink: 'rgb(var(--app-ink) / <alpha-value>)',
+                muted: 'rgb(var(--app-muted) / <alpha-value>)',
+                accent: 'rgb(var(--app-accent) / <alpha-value>)',
+                'accent-2': 'rgb(var(--app-accent-2) / <alpha-value>)'
+              },
               ftc: {
                 orange: '#F57E25',
                 blue: '#0066B3',
@@ -26,27 +35,6 @@
         }
       }
     </script>
-    <style>
-      body {
-        background-color: #0f172a;
-        color: #f8fafc;
-      }
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #1e293b; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #475569; 
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #64748b; 
-      }
-    </style>
   <script type="importmap">
 {
   "imports": {
@@ -60,7 +48,6 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>

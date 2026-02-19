@@ -1,4 +1,5 @@
 import { Lesson, Challenge, Achievement, UserProgressStore } from '../types';
+import { getCurrentUser } from './auth';
 
 export const LESSONS: Lesson[] = [
   {
@@ -518,28 +519,59 @@ shoot();`,
 ];
 
 export const ACHIEVEMENTS: Achievement[] = [
-  { id: 'a1', title: 'System Online', description: 'Completed your first lesson.', icon: '🚀', requirement: (p) => Object.keys(p.lessons).length >= 1 },
-  { id: 'a2', title: 'Drive Master', description: 'Learned Mecanum and Field Centric math.', icon: '🏎️', requirement: (p) => p.lessons['l5'] && p.lessons['l6'] },
-  { id: 'a3', title: 'Control Expert', description: 'Mastered the PIDF control stack.', icon: '🎛️', requirement: (p) => p.lessons['l8'] && p.lessons['l9'] && p.lessons['l10'] },
-  { id: 'a4', title: 'Visionary', description: 'Learned AprilTag tracking.', icon: '👁️', requirement: (p) => p.lessons['l12'] },
-  { id: 'a5', title: 'Sorter Supreme', description: 'Mastered the spindexer sorting system.', icon: '🎡', requirement: (p) => p.challenges['c12'] === true }
+  { id: 'a1', title: 'System Online', description: 'Completed your first lesson.', icon: 'rocket', requirement: (p) => Object.keys(p.lessons).length >= 1 },
+  { id: 'a2', title: 'Drive Master', description: 'Learned Mecanum and Field Centric math.', icon: 'drive', requirement: (p) => p.lessons['l5'] && p.lessons['l6'] },
+  { id: 'a3', title: 'Control Expert', description: 'Mastered the PIDF control stack.', icon: 'control', requirement: (p) => p.lessons['l8'] && p.lessons['l9'] && p.lessons['l10'] },
+  { id: 'a4', title: 'Visionary', description: 'Learned AprilTag tracking.', icon: 'vision', requirement: (p) => p.lessons['l12'] },
+  { id: 'a5', title: 'Sorter Supreme', description: 'Mastered the spindexer sorting system.', icon: 'sorter', requirement: (p) => p.challenges['c12'] === true }
 ];
 
 export const getTotalPossiblePoints = () => CHALLENGES.reduce((acc, curr) => acc + curr.points, 0);
 
+const LEGACY_PROGRESS_KEY = 'ftc_progress_v7';
+const PROGRESS_PREFIX = 'ftc_progress_v8_';
+const createEmptyProgress = (): UserProgressStore => ({ lessons: {}, challenges: {}, points: 0, unlockedAchievements: [] });
+
+const getProgressKey = (userId: string) => `${PROGRESS_PREFIX}${userId}`;
+
 export const getUserProgress = (): UserProgressStore => {
-    const stored = localStorage.getItem('ftc_progress_v7');
-    if (!stored) return { lessons: {}, challenges: {}, points: 0, unlockedAchievements: [] };
-    return JSON.parse(stored);
+    const user = getCurrentUser();
+    if (!user) return createEmptyProgress();
+
+    const userKey = getProgressKey(user.id);
+    const stored = localStorage.getItem(userKey);
+    if (stored) {
+        try {
+            return JSON.parse(stored) as UserProgressStore;
+        } catch {
+            return createEmptyProgress();
+        }
+    }
+
+    // One-time migration from the previous single-user key.
+    const legacy = localStorage.getItem(LEGACY_PROGRESS_KEY);
+    if (!legacy) return createEmptyProgress();
+
+    try {
+        const legacyProgress = JSON.parse(legacy) as UserProgressStore;
+        localStorage.setItem(userKey, JSON.stringify(legacyProgress));
+        localStorage.removeItem(LEGACY_PROGRESS_KEY);
+        return legacyProgress;
+    } catch {
+        return createEmptyProgress();
+    }
 };
 
 const saveProgress = (progress: UserProgressStore) => {
+    const user = getCurrentUser();
+    if (!user) return;
+
     const newAchievements = ACHIEVEMENTS.filter(a => !progress.unlockedAchievements.includes(a.id) && a.requirement(progress));
     if (newAchievements.length > 0) {
         progress.unlockedAchievements = [...progress.unlockedAchievements, ...newAchievements.map(a => a.id)];
         newAchievements.forEach(a => window.dispatchEvent(new CustomEvent('achievement_unlocked', { detail: a })));
     }
-    localStorage.setItem('ftc_progress_v7', JSON.stringify(progress));
+    localStorage.setItem(getProgressKey(user.id), JSON.stringify(progress));
     window.dispatchEvent(new Event('progress_updated'));
 };
 
