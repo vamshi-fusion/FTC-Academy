@@ -1,0 +1,5 @@
+{
+  "name": "FTC Academy",
+  "description": "Interactive Android Java programming platform for FIRST Tech Challenge students, featuring a real-time robot simulator.",
+  "requestFramePermissions": []
+}
