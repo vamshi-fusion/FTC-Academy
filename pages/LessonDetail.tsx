@@ -13,12 +13,14 @@ import {
   Loader2,
   PlayCircle,
   RotateCw,
+  Sparkles,
   XCircle,
 } from 'lucide-react';
 import { LESSONS, markLessonComplete } from '../services/data';
 import Simulator from '../components/Simulator';
 import { getLessonExercise } from '../shared/lessonExercises.js';
 import { clearEditorDraft, loadEditorDraft, saveEditorDraft } from '../services/editorDrafts';
+import AITutor from '../components/AITutor';
 
 interface CheckResult {
   label: string;
@@ -162,6 +164,7 @@ const LessonDetail: React.FC = () => {
   const [results, setResults] = useState<CheckResult[]>([]);
   const [runError, setRunError] = useState<string | null>(null);
   const [hasRun, setHasRun] = useState(false);
+  const [isTutorOpen, setTutorOpen] = useState(false);
 
   useEffect(() => {
     const draft = id ? loadEditorDraft('lesson', id) : null;
@@ -376,6 +379,13 @@ const LessonDetail: React.FC = () => {
 
   return (
     <div key={id} className="flex h-full flex-col overflow-y-auto bg-app-bg">
+      <AITutor
+        isOpen={isTutorOpen}
+        onClose={() => setTutorOpen(false)}
+        code={practiceCode}
+        context={`${lesson.title} - ${exercise.prompt}`}
+      />
+
       <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-app-line bg-white p-4">
         <div className="flex items-center gap-3 sm:gap-4">
           <button onClick={() => navigate('/lessons')} className="text-app-muted transition-colors hover:text-app-ink">
@@ -398,7 +408,16 @@ const LessonDetail: React.FC = () => {
         </section>
 
         <section className="mt-8 rounded-3xl border border-app-line bg-white p-6 shadow-sm sm:p-8">
-          <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-app-muted">Practice Question</p>
+          <div className="mb-1 flex items-center justify-between gap-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-app-muted">Practice Question</p>
+            <button
+              onClick={() => setTutorOpen(true)}
+              className="inline-flex items-center rounded-full bg-app-accent-2 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white transition-opacity hover:opacity-90"
+            >
+              <Sparkles size={12} className="mr-1.5" />
+              AI Help
+            </button>
+          </div>
           <h2 className="text-2xl font-semibold text-app-ink">{exercise.title}</h2>
           <p className="mt-2 text-sm text-app-muted">{exercise.prompt}</p>
 
@@ -494,9 +513,9 @@ const LessonDetail: React.FC = () => {
           </div>
 
           {allPassed && (
-            <div className="mt-6 flex items-center justify-between border-t border-app-line pt-4">
-              <p className="text-sm font-medium text-emerald-700">Lesson complete. Checks passed.</p>
-              <button onClick={goToNextLesson} className="ui-primary rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors">
+            <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm font-medium text-emerald-800">Lesson complete. Checks passed.</p>
+              <button onClick={goToNextLesson} className="ui-primary rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors sm:self-auto">
                 Continue
               </button>
             </div>

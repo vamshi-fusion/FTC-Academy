@@ -17,8 +17,18 @@ const AITutor: React.FC<AITutorProps> = ({ code, context, isOpen, onClose }) => 
     setLoading(true);
     setResponse(null);
     try {
-      // Create a new instance right before the call as per guidelines
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const apiKey =
+        process.env.VITE_GEMINI_API_KEY ||
+        process.env.GEMINI_API_KEY ||
+        process.env.API_KEY;
+
+      if (!apiKey) {
+        setResponse('Missing API key. Add `VITE_GEMINI_API_KEY=...` to your `.env` file and restart `npm run dev`.');
+        return;
+      }
+
+      const modelName = process.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash';
+      const ai = new GoogleGenAI({ apiKey });
       const prompt = `
         You are an expert FIRST Tech Challenge (FTC) robot programming mentor for middle school students.
         The student is working on this challenge: "${context}".
@@ -32,16 +42,18 @@ const AITutor: React.FC<AITutorProps> = ({ code, context, isOpen, onClose }) => 
         Format your response in Markdown.
       `;
 
-      // Using gemini-3-pro-preview for complex reasoning and coding tasks
       const result = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: modelName,
         contents: prompt,
       });
 
-      // Extract text output directly from the .text property
       setResponse(result.text || "I'm sorry, I couldn't process that. Try again!");
-    } catch (error) {
-      setResponse("Oops! I'm having trouble connecting to my robotic brain right now.");
+    } catch (error: any) {
+      const details =
+        error?.message ||
+        error?.error?.message ||
+        'Unknown AI request error.';
+      setResponse(`AI request failed: ${details}`);
     } finally {
       setLoading(false);
     }
