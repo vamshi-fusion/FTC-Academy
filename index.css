@@ -58,6 +58,10 @@ select {
   background-color: rgb(23 27 36) !important;
 }
 
+.theme-dark .bg-app-ink {
+  background-color: rgb(44 52 66) !important;
+}
+
 .border {
   border-width: 2px !important;
 }

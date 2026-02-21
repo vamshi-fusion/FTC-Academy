@@ -45,7 +45,7 @@ const AuthPage: React.FC = () => {
 
       <div className="relative mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-stretch">
         <section className="rounded-3xl border border-app-line bg-white p-8 shadow-sm sm:p-10">
-          <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-app-ink text-white">
+          <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-app-accent text-slate-900">
             <ShieldCheck size={22} />
           </div>
           <p className="mt-6 text-[11px] font-bold uppercase tracking-[0.25em] text-app-muted">FTC Academy</p>
@@ -63,7 +63,7 @@ const AuthPage: React.FC = () => {
             <button
               onClick={() => setMode('login')}
               className={`rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-[0.15em] transition-colors ${
-                mode === 'login' ? 'bg-app-ink text-white' : 'text-app-muted hover:text-app-ink'
+                mode === 'login' ? 'ui-primary' : 'text-app-muted hover:text-app-ink'
               }`}
               type="button"
             >
@@ -72,7 +72,7 @@ const AuthPage: React.FC = () => {
             <button
               onClick={() => setMode('signup')}
               className={`rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-[0.15em] transition-colors ${
-                mode === 'signup' ? 'bg-app-ink text-white' : 'text-app-muted hover:text-app-ink'
+                mode === 'signup' ? 'ui-primary' : 'text-app-muted hover:text-app-ink'
               }`}
               type="button"
             >
@@ -138,7 +138,7 @@ const AuthPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex w-full items-center justify-center rounded-xl bg-app-ink px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-white transition-colors hover:bg-app-accent disabled:opacity-60"
+              className="ui-primary inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em] transition-colors hover:opacity-90 disabled:opacity-60"
             >
               {mode === 'login' ? <LogIn size={14} className="mr-2" /> : <UserPlus size={14} className="mr-2" />}
               {isSubmitting ? 'Please wait...' : mode === 'login' ? 'Login' : 'Create Account'}
